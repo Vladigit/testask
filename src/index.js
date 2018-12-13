@@ -1,6 +1,7 @@
 import React, {PureComponent} from 'react'
 import {render} from 'react-dom'
 import TMDb from './TMDb'
+import SearchBox from './Components/SearchBox'
 import ViewList from './Components/ViewList'
 import './less/index.less'
 
@@ -21,7 +22,7 @@ class App extends PureComponent {
         })
         tmDB.Request('/genre/movie/list',{}).then(response => {
             this.setState({
-                genres: response
+                genres: response.genres
             })
         })
     }
@@ -30,13 +31,13 @@ class App extends PureComponent {
         const {filmsList, genres, filter} = this.state
         return(
         <div>
-            <input type='text' className='search-box' placeholder='search' onInput={this.filtring} />
+            <SearchBox filtring={this.filtring.bind(this)} />
             <ViewList filmsList={filmsList || []} tmDB={tmDB} genres={genres || []} filter={filter} />
         </div>
         )
     }
 
-    filtring = e => {
+    filtring(e) {
         this.setState({
             filter: e.target.value
         })
