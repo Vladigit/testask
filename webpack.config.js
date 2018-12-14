@@ -1,7 +1,7 @@
 var path = require('path')
 
 let config = {
-    entry: './src/index.js',
+    entry: ['@babel/polyfill','./src/index.js'],
     output: {
         path: path.resolve(__dirname, 'public'),
         filename: 'index.js'
@@ -14,7 +14,7 @@ let config = {
             },
             {
                 test: /\.less$/,
-                use: ['style-loader', 'css-loader', 'less-loader']
+                use: ['style-loader', 'css-loader', 'less-loader', 'postcss-loader']
             }
         ]
     },
