@@ -1,4 +1,5 @@
 import React, {PureComponent} from 'react'
+import { connect } from 'react-redux'
 
 function Overview(props) {
     return(
@@ -14,31 +15,24 @@ function Overview(props) {
 }
 
 class ViewList extends PureComponent {
-    state = {
-        openedDesc: null
-    }
 
-    filtringFilms(films,filter) {
+    filtringFilms(films, filter) {
         let filtredFilms = []
 
         for(let film of films) {
-            if (new RegExp(filter, 'i').test(film.title))
+            if (new RegExp(filter, 'i').test(film.title) && films)
                 filtredFilms.push(film)
         }
-
         return filtredFilms
     }
 
     render() {
-        const {filmsList, tmDB, genres, filter} = this.props,
-              {openedDesc} = this.state
-
-        var films = this.filtringFilms(filmsList, filter).map((value, index) => {
-            if(value.genre_ids && genres) {
+        var films = this.filtringFilms(this.props.state.films, this.props.state.filter).map((film) => {
+            if(film.genre_ids && this.props.state.genres) {
                 var keywords = []
 
-                for(let key of value.genre_ids) {
-                    for (let gen of genres) {
+                for(let key of film.genre_ids) {
+                    for (let gen of this.props.state.genres) {
                         if (key === gen.id) {
                             keywords.push(gen.name)
                         }
@@ -49,29 +43,32 @@ class ViewList extends PureComponent {
             }
 
             return (
-                <div className='film-container' key={value.id}>
+                <div className='film-container' key={film.id}>
                     <div>
-                        <h2>{value.title}</h2><br />
+                        <h2>{film.title}</h2><br />
                         <div>
                             {keywords}
                         </div>
-                        <button className='details' onClick={this.showInfo.bind(this, value.id)}>More</button>
+                        <button className='details' onClick={this.props.onOpenFilmDescription.bind(this,film.id)}>More</button>
                     </div>
-                    <img src={tmDB.getImgPath(value.poster_path)} />
-                    {openedDesc === value.id ? <Overview film={value} close={this.showInfo.bind(this)} /> : null}
+                    <img src={this.props.tmDB.getImgPath(film.poster_path)} />
+                    {this.props.state.openedFilmId === film.id ? <Overview film={film} close={this.props.onOpenFilmDescription.bind(this, null)} /> : null}
                 </div>
             )
         })
-
         return(
             <div className='view'>{films.length ? films : 'loading...'}</div>
-        )
-    }
-    showInfo(openedId) {
-        this.setState({
-            openedDesc: openedId
-        })
+        ) 
     }
 }
 
-export default ViewList
+export default connect(
+    state => ({
+        state
+    }),
+    dispatch => ({
+        onOpenFilmDescription: id => {
+            dispatch({type: 'open_film_description', id})
+        }
+    })
+)(ViewList)

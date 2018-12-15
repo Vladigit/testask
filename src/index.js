@@ -1,47 +1,51 @@
-import React, {PureComponent} from 'react'
+import { createStore } from 'redux'
+import { Provider } from 'react-redux'
+
+import React from 'react'
 import {render} from 'react-dom'
-import TMDb from './TMDb'
-import SearchBox from './Components/SearchBox'
-import ViewList from './Components/ViewList'
+
+import App from './Components/App'
 import './less/index.less'
 
-var tmDB = new TMDb('0145bb2c9395c62035dc00ae5b1cc628')
-
-class App extends PureComponent {
-    state = {
-        filmsList: null,
-        genres: null,
-        filter: ''
-    }
-
-    componentWillMount() {
-        tmDB.Request('/movie/top_rated',{}).then(response => {
-            this.setState({
-                filmsList: response.results
-            })
-        })
-        tmDB.Request('/genre/movie/list',{}).then(response => {
-            this.setState({
-                genres: response.genres
-            })
-        })
-    }
-
-    render() {
-        const {filmsList, genres, filter} = this.state
-        return(
-        <div>
-            <SearchBox filtring={this.filtring.bind(this)} />
-            <ViewList filmsList={filmsList || []} tmDB={tmDB} genres={genres || []} filter={filter} />
-        </div>
-        )
-    }
-
-    filtring(e) {
-        this.setState({
-            filter: e.target.value
-        })
-    }
+const initializedState = {
+    films: [],
+    genres: [],
+    filter: '',
+    openedFilmId: null
 }
 
-render(<App />, document.getElementById('main'))
+function mainReducer(state = initializedState, action) {
+    if (action.type === 'films_init') {
+        return {
+            ...state,
+            films: action.films
+        }
+    } else 
+    if (action.type === 'genres_init') {
+        return {
+            ...state,
+            genres: action.genres
+        }
+    } else
+    if (action.type === 'filtring_of_films') {
+        return {
+            ...state,
+            filter: action.filter
+        }
+    } else
+    if (action.type === 'open_film_description') {
+        return {
+            ...state,
+            openedFilmId: action.id
+        }
+    }
+    return state
+}
+
+var store = createStore(mainReducer)
+
+render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+document.getElementById('main'))
