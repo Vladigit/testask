@@ -5,7 +5,8 @@ function Overview(props) {
     return(
     <div className='overview'>
         <header>
-            Release: {props.film.release_date}<span> </span>
+            Release: {props.film.release_date}
+            <span> </span>
             Rating: {props.film.vote_average}
         </header>
         <p className='desc'>{props.film.overview}</p>
@@ -16,30 +17,28 @@ function Overview(props) {
 
 class ViewList extends PureComponent {
 
-    filtringFilms(films, filter) {
-        let filtredFilms = []
-
-        for(let film of films) {
-            if (new RegExp(filter, 'i').test(film.title) && films)
-                filtredFilms.push(film)
-        }
-        return filtredFilms
+    state = {
+        openMovieId: -1
     }
 
     render() {
-        var films = this.filtringFilms(this.props.state.films, this.props.state.filter).map((film) => {
-            if(film.genre_ids && this.props.state.genres) {
+
+        const { filter, genres } = this.props
+        var films = filter.results.map((film) => {
+
+            if(film.genre_ids && genres) {
                 var keywords = []
 
                 for(let key of film.genre_ids) {
-                    for (let gen of this.props.state.genres) {
+                    for (let gen of genres) {
                         if (key === gen.id) {
                             keywords.push(gen.name)
                         }
                     }
                 }
-
-                keywords = keywords.map((key, index) => <span key={index} className='key-word'>#{key} </span>)
+                keywords = keywords.map((key, index) => (
+                    <span key={index} className='key-word'>#{key} </span>
+                ))
             }
 
             return (
@@ -49,26 +48,42 @@ class ViewList extends PureComponent {
                         <div>
                             {keywords}
                         </div>
-                        <button className='details' onClick={this.props.onOpenFilmDescription.bind(this,film.id)}>More</button>
+                        <button className='details' onClick={this.openDesc.bind(this,film.id)}>More</button>
                     </div>
                     <img src={this.props.tmDB.getImgPath(film.poster_path)} />
-                    {this.props.state.openedFilmId === film.id ? <Overview film={film} close={this.props.onOpenFilmDescription.bind(this, null)} /> : null}
+                    {
+                        this.state.openMovieId === film.id 
+                        ? <Overview film={film} close={this.openDesc.bind(this)} />
+                        : null
+                    }
                 </div>
             )
         })
         return(
-            <div className='view'>{films.length ? films : 'loading...'}</div>
-        ) 
+            <div className='view'>{
+                films.length
+                ? films
+                : 'loading...'
+            }</div>
+        )
     }
+
+    openDesc = (id = -1) => {
+        this.setState({
+            openMovieId: id
+        })
+    }
+
 }
 
 export default connect(
-    state => ({
-        state
-    }),
-    dispatch => ({
-        onOpenFilmDescription: id => {
-            dispatch({type: 'open_film_description', id})
+    state => {
+        let { filter, genres, films } = state
+        return {
+            films,
+            genres,
+            filter
         }
-    })
+    },
+    null
 )(ViewList)

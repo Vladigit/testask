@@ -1,21 +1,35 @@
-import React from 'react'
+import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 
-export default connect (
-    state => ({
-        state
-    }),
-    dispatch => ({
-        onFilter: e => {
-            dispatch({type: 'filtring_of_films', filter: e.target.value})
-        }
-    })
-)(
-    function SearchBox(props) {
+
+function putDispatchToProps(dispatch) {
+
+    function filtring(event) {
+        dispatch({
+            type: 'FILTRING_OF_FILMS',
+            payload: event.target.value
+        })
+    }
+
+    return {
+        filtring
+    }
+}
+
+class SearchBox extends PureComponent {
+    render () {
         return(
-        <div>
-            <input type='text' className='search-box' placeholder='search' onInput={props.onFilter} />
-        </div>
+        <input
+            type='text'
+            className='search-box'
+            placeholder='search'
+            onInput={this.props.filtring}
+        />
         )
     }
-)
+}
+
+export default connect(
+    null,
+    putDispatchToProps
+)(SearchBox)
